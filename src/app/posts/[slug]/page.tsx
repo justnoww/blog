@@ -9,6 +9,8 @@ import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { DashboardTableOfContents } from "@/components/toc";
+import { PostStats } from "@/components/post-stats";
+import { ShareButton } from "@/components/share-button";
 import GithubSlugger from "github-slugger";
 
 const components = {
@@ -81,6 +83,11 @@ export default async function PostPage({ params }: PostPageProps) {
               {post.meta.description}
             </p>
           )}
+
+          <div className="flex items-center justify-between w-full py-4 border-y mt-6">
+             <PostStats slug={slug} />
+             <ShareButton title={post.meta.title} url={`${process.env.NEXT_PUBLIC_SITE_URL || 'https://your-domain.com'}/posts/${slug}`} />
+          </div>
         </div>
 
         <div className="prose prose-sm md:prose-base prose-slate dark:prose-invert max-w-none">
