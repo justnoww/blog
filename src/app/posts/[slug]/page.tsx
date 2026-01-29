@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { DashboardTableOfContents } from "@/components/toc";
 import { PostStats } from "@/components/post-stats";
 import { ShareButton } from "@/components/share-button";
+import { Comments } from "@/components/comments";
 import GithubSlugger from "github-slugger";
 
 const components = {
@@ -120,6 +121,8 @@ export default async function PostPage({ params }: PostPageProps) {
             ← Back to all posts
           </a>
         </div>
+        
+        <Comments />
       </div>
       
       {/* 桌面端侧边栏 TOC */}

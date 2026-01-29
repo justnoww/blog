@@ -1,9 +1,14 @@
 import Link from "next/link";
 import { ModeToggle } from "@/components/mode-toggle";
 import { Button } from "@/components/ui/button";
-import { Github, Twitter } from "lucide-react"; // 假设需要社交图标
+import { Github, Twitter } from "lucide-react";
+import { SiteSearch } from "@/components/site-search";
+import { getAllPostsForSearch } from "@/lib/posts";
 
 export function Navbar() {
+  // 获取所有文章用于搜索（包含正文）
+  const posts = getAllPostsForSearch();
+
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-14 max-w-5xl items-center mx-auto px-4">
@@ -29,10 +34,10 @@ export function Navbar() {
           </nav>
         </div>
         
-        {/* Mobile Menu Placeholder (可以后续完善) */}
         <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">
           <div className="w-full flex-1 md:w-auto md:flex-none">
-            {/* Search Placeholder */}
+            {/* 搜索框 */}
+            <SiteSearch posts={posts} />
           </div>
           <nav className="flex items-center gap-2">
             <Button variant="ghost" size="icon" asChild>
