@@ -124,3 +124,29 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* 自定义 Text Fragment 高亮样式 */
+@keyframes highlight-fade {
+  0% { background-color: rgba(253, 224, 71, 0.5); } /* 黄色 */
+  80% { background-color: rgba(253, 224, 71, 0.5); }
+  100% { background-color: transparent; }
+}
+
+::target-text {
+  animation: highlight-fade 2s ease-out forwards;
+  background-color: rgba(253, 224, 71, 0.5); /* 回退样式 */
+  color: inherit;
+}
+
+@layer utilities {
+  .prose :where(h1, h2, h3, h4, h5, h6) {
+    border-bottom: none !important;
+  }
+  .prose :where(h1, h2, h3, h4, h5, h6) a {
+    text-decoration: none !important;
+    font-weight: inherit;
+  }
+  .prose :where(h1, h2, h3, h4, h5, h6) a:hover {
+    text-decoration: none !important;
+  }
+}

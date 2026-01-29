@@ -12,7 +12,10 @@ import { DashboardTableOfContents } from "@/components/toc";
 import { PostStats } from "@/components/post-stats";
 import { ShareButton } from "@/components/share-button";
 import { Comments } from "@/components/comments";
+import { HighlightRemover } from "@/components/highlight-remover";
 import GithubSlugger from "github-slugger";
+import Link from "next/link";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 
 const components = {
   Button,
@@ -49,6 +52,7 @@ function getTableOfContents(markdown: string) {
 export default async function PostPage({ params }: PostPageProps) {
   const { slug } = await params;
   const post = getPostBySlug(slug);
+  const allPosts = getAllPosts(); // 获取所有文章以计算上一篇/下一篇
 
   if (!post) {
     notFound();
@@ -56,8 +60,14 @@ export default async function PostPage({ params }: PostPageProps) {
 
   const toc = getTableOfContents(post.content);
 
+  // 计算上一篇和下一篇
+  const currentIndex = allPosts.findIndex((p) => p.slug === slug);
+  const nextPost = currentIndex > 0 ? allPosts[currentIndex - 1] : null; 
+  const prevPost = currentIndex < allPosts.length - 1 ? allPosts[currentIndex + 1] : null; 
+
   return (
     <div className="container relative max-w-5xl py-6 lg:py-10 lg:gap-10 xl:grid xl:grid-cols-[1fr_240px]">
+      <HighlightRemover />
       <div className="mx-auto w-full min-w-0 max-w-3xl">
         <div className="flex flex-col items-start gap-4 mb-8">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -99,7 +109,7 @@ export default async function PostPage({ params }: PostPageProps) {
               mdxOptions: {
                 remarkPlugins: [remarkMath],
                 rehypePlugins: [
-                  rehypeSlug, // 自动生成 id
+                  rehypeSlug, 
                   [
                      rehypeAutolinkHeadings, 
                      { behavior: 'wrap' } 
@@ -112,14 +122,39 @@ export default async function PostPage({ params }: PostPageProps) {
           />
         </div>
 
-        <hr className="my-8" />
-        <div className="flex justify-center">
-          <a
+        <hr className="mt-8" />
+        
+        {/* 上一篇/下一篇 导航 */}
+        <div className="flex flex-col md:flex-row justify-between gap-4 py-8">
+            <div className="w-1/2">
+                {prevPost && (
+                    <Link href={`/posts/${prevPost.slug}`} className="group flex flex-col gap-1 text-left transition-colors hover:text-foreground">
+                        <span className="text-xs text-muted-foreground group-hover:text-primary flex items-center gap-1">
+                            <ArrowLeft className="h-3 w-3" /> Older
+                        </span>
+                        <span className="text-sm font-medium truncate w-full">{prevPost.title}</span>
+                    </Link>
+                )}
+            </div>
+            <div className="w-1/2 flex justify-end">
+                {nextPost && (
+                    <Link href={`/posts/${nextPost.slug}`} className="group flex flex-col gap-1 text-right transition-colors hover:text-foreground">
+                        <span className="text-xs text-muted-foreground group-hover:text-primary flex items-center justify-end gap-1">
+                            Newer <ArrowRight className="h-3 w-3" />
+                        </span>
+                        <span className="text-sm font-medium truncate w-full">{nextPost.title}</span>
+                    </Link>
+                )}
+            </div>
+        </div>
+
+        <div className="flex justify-center border-t py-6">
+          <Link
             href="/"
             className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
           >
-            ← Back to all posts
-          </a>
+            Back to all posts
+          </Link>
         </div>
         
         <Comments />

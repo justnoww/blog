@@ -21,11 +21,46 @@ interface PostMetaForSearch {
   slug: string
   title: string
   tags: string[]
-  content: string // 新增：包含正文内容
+  content: string
+}
+
+// 辅助组件：高亮文本片段
+function HighlightedSnippet({ content, query }: { content: string, query: string }) {
+  if (!query) return null;
+  const lowerContent = content.toLowerCase();
+  const lowerQuery = query.toLowerCase();
+  const index = lowerContent.indexOf(lowerQuery);
+
+  if (index === -1) return null;
+
+  const start = Math.max(0, index - 20); 
+  const end = Math.min(content.length, index + query.length + 60);
+  
+  const snippetText = content.slice(start, end);
+  
+  // 在片段中再次查找关键词位置（注意大小写不敏感匹配）
+  const parts = snippetText.split(new RegExp(`(${query})`, 'gi'));
+
+  return (
+    <span className="text-xs text-muted-foreground truncate block">
+      {start > 0 && "..."}
+      {parts.map((part, i) => 
+        part.toLowerCase() === lowerQuery ? (
+          <span key={i} className="text-primary font-bold bg-yellow-100 dark:bg-yellow-900/50 px-0.5 rounded-sm">
+            {part}
+          </span>
+        ) : (
+          part
+        )
+      )}
+      {end < content.length && "..."}
+    </span>
+  );
 }
 
 export function SiteSearch({ posts }: { posts: PostMetaForSearch[] }) {
   const [open, setOpen] = React.useState(false)
+  const [query, setQuery] = React.useState("") 
   const router = useRouter()
 
   React.useEffect(() => {
@@ -59,7 +94,11 @@ export function SiteSearch({ posts }: { posts: PostMetaForSearch[] }) {
         </kbd>
       </Button>
       <CommandDialog open={open} onOpenChange={setOpen}>
-        <CommandInput placeholder="Type a command or search..." />
+        <CommandInput 
+          placeholder="Type a command or search..." 
+          value={query}
+          onValueChange={setQuery}
+        />
         <CommandList>
           <CommandEmpty>No results found.</CommandEmpty>
           
@@ -67,22 +106,28 @@ export function SiteSearch({ posts }: { posts: PostMetaForSearch[] }) {
             {posts.map((post) => (
               <CommandItem
                 key={post.slug}
-                // 关键修改：将 content 加入 value，这样 cmdk 就会搜索正文了
-                // 我们截取前 5000 个字符以防性能问题，通常足够
                 value={`${post.title} ${post.tags.join(" ")} ${post.content.slice(0, 5000)}`}
                 onSelect={() => {
-                  runCommand(() => router.push(`/posts/${post.slug}`))
+                  runCommand(() => {
+                    const targetUrl = query.length > 1
+                      ? `/posts/${post.slug}#:~:text=${encodeURIComponent(query.trim())}`
+                      : `/posts/${post.slug}`;
+                    
+                    // 强制使用 window.location 跳转以触发浏览器的 Text Fragment 高亮
+                    // 虽然这会造成一次全页刷新，但能保证高亮功能生效
+                    window.location.href = targetUrl;
+                  })
                 }}
               >
-                <FileText className="mr-2 h-4 w-4 shrink-0" />
-                <div className="flex flex-col">
-                  <span>{post.title}</span>
-                  {/* 可选：显示一小段匹配内容的摘要，但实现起来比较复杂，这里先保持简洁 */}
+                <FileText className="mr-2 h-4 w-4 shrink-0 mt-1" />
+                <div className="flex flex-col overflow-hidden w-full">
+                  <span className="font-medium truncate">{post.title}</span>
+                  <HighlightedSnippet content={post.content} query={query} />
                 </div>
                 {post.tags.length > 0 && (
-                   <span className="ml-auto flex gap-1">
-                     {post.tags.slice(0, 2).map(tag => (
-                        <span key={tag} className="text-[10px] text-muted-foreground bg-secondary px-1 rounded hidden sm:inline-block">{tag}</span>
+                   <span className="ml-auto flex gap-1 pl-2">
+                     {post.tags.slice(0, 1).map(tag => (
+                        <span key={tag} className="text-[10px] text-muted-foreground bg-secondary px-1 rounded hidden sm:inline-block whitespace-nowrap">{tag}</span>
                      ))}
                    </span>
                 )}
