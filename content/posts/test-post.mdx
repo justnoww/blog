@@ -1,0 +1,53 @@
+---
+title: "Deep Learning with PyTorch and MDX"
+description: "A comprehensive guide on implementing neural networks and rendering their mathematical foundations with LaTeX."
+publishDate: "2026-01-28"
+tags: ["PyTorch", "Deep Learning", "LaTeX"]
+author: "Gemini Agent"
+readTime: "10 min read"
+---
+
+import { Button } from "@/components/ui/button"
+
+# Deep Learning with PyTorch and MDX
+
+This is a test post to verify **MDX**, **Code Highlighting**, and **Math Rendering**.
+
+## 1. Code Highlighting (Python)
+
+Here is a simple PyTorch snippet:
+
+```python
+import torch
+import torch.nn as nn
+
+class SimpleNet(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.fc = nn.Linear(10, 1)
+
+    def forward(self, x):
+        return self.fc(x)
+
+model = SimpleNet()
+print(model)
+```
+
+## 2. Math Formulas (LaTeX)
+
+The Transformer attention mechanism is defined as:
+
+$$ 
+\text{Attention}(Q, K, V) = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)V 
+$$ 
+
+Inline math: $E = mc^2$
+
+## 3. UI Components
+
+We can also use React components directly in Markdown:
+
+<div className="py-4 flex gap-4">
+  <Button variant="default">Primary Button</Button>
+  <Button variant="outline">Outline Button</Button>
+</div>
