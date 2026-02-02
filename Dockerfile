@@ -1,7 +1,6 @@
 # Stage 1: Install dependencies and build the project
 # 使用一个包含 Node.js 环境的官方镜像作为构建阶段的基础
-FROM node:20-alpine AS builder
-
+FROM local/node:20 AS builder
 # 设置工作目录
 WORKDIR /app
 
@@ -18,7 +17,7 @@ RUN npm run build
 
 # Stage 2: Create the production image
 # 使用一个更轻量级的 Node.js 镜像作为运行阶段的基础
-FROM node:20-alpine AS runner
+FROM local/node:20 AS runner
 
 # 设置工作目录
 WORKDIR /app
@@ -33,7 +32,7 @@ COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/static ./.next/static
 
 # 暴露 Next.js 应用监听的端口
-EXPOSE 3000
+EXPOSE 33000
 
 # 定义容器启动时执行的命令
 # Next.js 在 standalone 模式下会生成一个 server.js 文件作为入口

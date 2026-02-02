@@ -5,7 +5,7 @@ services:
     build:
       context: . # 指定 Dockerfile 所在的目录
       dockerfile: Dockerfile
-    container_name: ai-blog
+    container_name: blog
     restart: always # 容器退出时总是重启
     environment:
       - NODE_ENV=production
