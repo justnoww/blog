@@ -1,6 +1,7 @@
 # Stage 1: Install dependencies and build the project
 # 使用一个包含 Node.js 环境的官方镜像作为构建阶段的基础
-FROM local/node:20 AS builder
+FROM node:20-alpine AS builder
+
 # 设置工作目录
 WORKDIR /app
 
@@ -17,7 +18,7 @@ RUN npm run build
 
 # Stage 2: Create the production image
 # 使用一个更轻量级的 Node.js 镜像作为运行阶段的基础
-FROM local/node:20 AS runner
+FROM node:20-alpine AS runner
 
 # 设置工作目录
 WORKDIR /app
