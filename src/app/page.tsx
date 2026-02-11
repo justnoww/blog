@@ -55,10 +55,18 @@ export default async function Home() {
     html_url: "https://github.com",
   };
 
+  // 提取前 10 个热门标签
+  const allTags = posts.flatMap(post => post.tags);
+  const tagCounts = allTags.reduce((acc, tag) => {
+    acc[tag] = (acc[tag] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+  const sortedTags = Object.keys(tagCounts).sort((a, b) => tagCounts[b] - tagCounts[a]).slice(0, 10);
+
   return (
-    <div className="flex flex-col gap-8 md:flex-row">
-      {/* 侧边栏：个人简介 */}
-      <aside className="w-full md:w-1/3 lg:w-1/4 space-y-6">
+    <div className="flex flex-col gap-8 md:flex-row relative items-start">
+      {/* 侧边栏：个人简介 (Sticky) */}
+      <aside className="w-full md:w-1/3 lg:w-1/4 space-y-6 sticky top-24">
         <Card>
           <CardHeader>
             <div className="w-full flex justify-center mb-4">
@@ -98,11 +106,11 @@ export default async function Home() {
 
         {/* 热门标签 */}
         <Card>
-          <CardHeader>
+          <CardHeader className="pb-3">
             <CardTitle className="text-lg">Topics</CardTitle>
           </CardHeader>
           <CardContent className="flex flex-wrap gap-2">
-            {["Machine Learning", "Next.js", "System Design", "Algorithms", "Python"].map((tag) => (
+            {sortedTags.map((tag) => (
               <Link key={tag} href={`/tags/${tag.toLowerCase()}`}>
                 <Badge variant="secondary" className="cursor-pointer hover:bg-secondary/80">
                   {tag}
@@ -116,43 +124,46 @@ export default async function Home() {
       {/* 主内容区：文章列表 */}
       <section className="flex-1 space-y-6">
         <div className="flex items-center justify-between">
-          <h2 className="text-3xl font-bold tracking-tight">Latest Posts</h2>
-          <Button variant="ghost" asChild>
+          <h2 className="text-2xl font-bold tracking-tight">Latest Posts</h2>
+          <Button variant="ghost" size="sm" asChild>
             <Link href="/posts">View all →</Link>
           </Button>
         </div>
 
-        <div className="grid gap-6">
+        <div className="grid gap-3">
           {posts.map((post) => (
-            <Card key={post.slug} className="transition-colors hover:bg-muted/50">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">{post.date}</span>
-                  {post.readTime && <span className="text-sm text-muted-foreground">{post.readTime}</span>}
+            <Card key={post.slug} className="transition-colors hover:bg-muted/50 p-3">
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                  <span>{post.date}</span>
+                  {post.readTime && <span>{post.readTime}</span>}
                 </div>
+                
                 <Link href={`/posts/${post.slug}`}>
-                  <CardTitle className="text-xl mt-2 hover:underline decoration-primary underline-offset-4">
+                  <h3 className="text-lg font-semibold leading-tight hover:underline decoration-primary underline-offset-4">
                     {post.title}
-                  </CardTitle>
+                  </h3>
                 </Link>
-                <div className="flex gap-2 mt-2">
-                  {post.tags?.map((tag) => (
-                    <Link key={tag} href={`/tags/${tag.toLowerCase()}`}>
-                      <Badge variant="outline" className="text-xs font-normal cursor-pointer hover:bg-secondary">
-                        {tag}
-                      </Badge>
-                    </Link>
-                  ))}
+
+                <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
+                  {post.description}
+                </p>
+
+                <div className="flex items-center justify-between mt-1">
+                  <div className="flex flex-wrap gap-2">
+                    {post.tags?.slice(0, 3).map((tag) => (
+                      <Link key={tag} href={`/tags/${tag.toLowerCase()}`}>
+                        <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-5 font-normal hover:bg-secondary/80">
+                          {tag}
+                        </Badge>
+                      </Link>
+                    ))}
+                  </div>
+                  <Link href={`/posts/${post.slug}`} className="text-xs font-medium text-primary hover:underline whitespace-nowrap ml-2">
+                    Read more →
+                  </Link>
                 </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">{post.description}</p>
-              </CardContent>
-              <CardFooter>
-                <Link href={`/posts/${post.slug}`} className="text-sm font-medium text-primary hover:underline">
-                  Read more
-                </Link>
-              </CardFooter>
+              </div>
             </Card>
           ))}
         </div>

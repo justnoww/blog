@@ -25,6 +25,7 @@ export function getAllPosts(): Post[] {
       title: data.title || slug,
       description: data.description || "",
       date: data.publishDate || data.date || new Date().toISOString(),
+      category: data.category || "Uncategorized",
       tags: data.tags || [],
       author: data.author,
       readTime: data.readTime || readStats.text,
@@ -41,6 +42,19 @@ export function getPostsByTag(tag: string): Post[] {
   );
 }
 
+export function getPostsByCategory(category: string): Post[] {
+  const allPosts = getAllPosts();
+  return allPosts.filter((post) =>
+    post.category.toLowerCase() === category.toLowerCase()
+  );
+}
+
+export function getAllCategories(): string[] {
+  const allPosts = getAllPosts();
+  const categories = new Set(allPosts.map((post) => post.category));
+  return Array.from(categories);
+}
+
 export function getPostBySlug(slug: string) {
   const filePath = path.join(postsDirectory, `${slug}.mdx`);
   if (!fs.existsSync(filePath)) return null;
@@ -55,6 +69,7 @@ export function getPostBySlug(slug: string) {
       title: data.title || slug,
       description: data.description || "",
       date: data.publishDate || data.date || new Date().toISOString(),
+      category: data.category || "Uncategorized",
       tags: data.tags || [],
       author: data.author,
       readTime: data.readTime || readStats.text,

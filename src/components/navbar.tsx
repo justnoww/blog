@@ -26,6 +26,24 @@ export function Navbar() {
               Blog
             </Link>
             <Link
+              href="/categories/AI"
+              className="transition-colors hover:text-foreground/80 text-foreground/60"
+            >
+              AI
+            </Link>
+            <Link
+              href="/categories/Coding"
+              className="transition-colors hover:text-foreground/80 text-foreground/60"
+            >
+              Coding
+            </Link>
+            <Link
+              href="/categories/Other"
+              className="transition-colors hover:text-foreground/80 text-foreground/60"
+            >
+              Other
+            </Link>
+            <Link
               href="/about"
               className="transition-colors hover:text-foreground/80 text-foreground/60"
             >

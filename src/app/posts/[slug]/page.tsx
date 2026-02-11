@@ -71,6 +71,13 @@ export default async function PostPage({ params }: PostPageProps) {
       <div className="mx-auto w-full min-w-0 max-w-3xl">
         <div className="flex flex-col items-start gap-4 mb-8">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Link
+               href={`/categories/${post.meta.category}`}
+               className="font-medium text-foreground hover:underline"
+            >
+               {post.meta.category}
+            </Link>
+            <span>•</span>
             <time dateTime={post.meta.date}>{post.meta.date}</time>
             {post.meta.readTime && (
               <>

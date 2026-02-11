@@ -7,6 +7,10 @@ export function Comments() {
   const { theme, systemTheme } = useTheme();
   const ref = React.useRef<HTMLDivElement>(null);
 
+  // 计算当前实际主题
+  const currentTheme = theme === "system" ? systemTheme : theme;
+  const giscusTheme = currentTheme === "dark" ? "dark" : "light";
+
   const REPO = "justnoww/blog"; // 你的仓库名
   const REPO_ID = "R_kgDORDwo_w"; // 你的仓库 ID
   const CATEGORY = "Announcements"; // Discussion 分类
@@ -29,11 +33,14 @@ export function Comments() {
     script.setAttribute("data-reactions-enabled", "1");
     script.setAttribute("data-emit-metadata", "0");
     script.setAttribute("data-input-position", "bottom");
-    script.setAttribute("data-theme", "preferred_color_scheme");
+    
+    // 使用计算出的主题，而不是 preferred_color_scheme
+    script.setAttribute("data-theme", giscusTheme || "light");
+    
     script.setAttribute("data-lang", "en");
 
     ref.current.appendChild(script);
-  }, []);
+  }, [giscusTheme]); // 依赖 giscusTheme，确保主题变化时能重新加载（或者依靠下面的 postMessage）
 
   // 监听主题变化，动态更新 Giscus 主题
   React.useEffect(() => {
@@ -42,14 +49,11 @@ export function Comments() {
     );
     if (!iframe) return;
 
-    const currentTheme = theme === "system" ? systemTheme : theme;
-    const giscusTheme = currentTheme === "dark" ? "dark" : "light";
-
     iframe.contentWindow?.postMessage(
       { giscus: { setConfig: { theme: giscusTheme } } },
       "https://giscus.app",
     );
-  }, [theme, systemTheme]);
+  }, [giscusTheme]);
 
   return (
     <div className="w-full mt-10 pt-10 border-t">

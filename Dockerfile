@@ -1,40 +1,67 @@
-# Stage 1: Install dependencies and build the project
-# 使用一个包含 Node.js 环境的官方镜像作为构建阶段的基础
-FROM node:20-alpine AS builder
+FROM node:20-alpine AS base
 
-# 设置工作目录
+# Install dependencies only when needed
+FROM base AS deps
+# Check https://github.com/nodejs/docker-node/tree/b4117f9333da4138b03a546ec926ef50a31506c3#nodealpine to understand why libc6-compat might be needed.
+RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
-# 复制 package.json 和 package-lock.json 文件，并安装依赖
-COPY package.json package-lock.json ./
-RUN npm install --frozen-lockfile
+# Install dependencies based on the preferred package manager
+COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* ./
+RUN \
+  if [ -f yarn.lock ]; then yarn --frozen-lockfile; \
+  elif [ -f package-lock.json ]; then npm ci; \
+  elif [ -f pnpm-lock.yaml ]; then corepack enable pnpm && pnpm i --frozen-lockfile; \
+  else echo "Lockfile not found." && exit 1; \
+  fi
 
-# 复制项目所有文件
+
+# Rebuild the source code only when needed
+FROM base AS builder
+WORKDIR /app
+COPY --from=deps /app/node_modules ./
 COPY . .
 
-# 执行 Next.js 构建命令
-# next build 会将独立运行所需的文件输出到 .next/standalone 目录
-RUN npm run build
+# Next.js collects completely anonymous telemetry data about general usage.
+# Learn more here: https://nextjs.org/telemetry
+# Uncomment the following line in case you want to disable telemetry during the build.
+ENV NEXT_TELEMETRY_DISABLED 1
 
-# Stage 2: Create the production image
-# 使用一个更轻量级的 Node.js 镜像作为运行阶段的基础
-FROM node:20-alpine AS runner
+RUN \
+  if [ -f yarn.lock ]; then yarn run build; \
+  elif [ -f package-lock.json ]; then npm run build; \
+  elif [ -f pnpm-lock.yaml ]; then corepack enable pnpm && pnpm run build; \
+  else echo "Lockfile not found." && exit 1; \
+  fi
 
-# 设置工作目录
+# Production image, copy all the files and run next
+FROM base AS runner
 WORKDIR /app
 
-# 设置环境变量，指示 Next.js 在生产模式下运行
 ENV NODE_ENV production
+# Uncomment the following line in case you want to disable telemetry during runtime.
+ENV NEXT_TELEMETRY_DISABLED 1
 
-# 复制 standalone 构建产物、public 文件夹和 .next/static 文件夹
-# 确保 Next.js 在独立模式下运行所需的所有文件都已复制
-COPY --from=builder /app/.next/standalone ./
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/.next/static ./.next/static
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
 
-# 暴露 Next.js 应用监听的端口
-EXPOSE 33000
+COPY --from=builder /app/public ./
 
-# 定义容器启动时执行的命令
-# Next.js 在 standalone 模式下会生成一个 server.js 文件作为入口
+# Set the correct permission for prerender cache
+RUN mkdir .next
+RUN chown nextjs:nodejs .next
+
+# Automatically leverage output traces to reduce image size
+# https://nextjs.org/docs/advanced-features/output-file-tracing
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+
+USER nextjs
+
+EXPOSE 3000
+
+ENV PORT 3000
+# set hostname to localhost
+ENV HOSTNAME "0.0.0.0"
+
 CMD ["node", "server.js"]
