@@ -99,6 +99,9 @@ importers:
         specifier: ^3.4.0
         version: 3.4.0
     devDependencies:
+      '@types/mdx':
+        specifier: ^2.0.13
+        version: 2.0.13
       '@tailwindcss/postcss':
         specifier: ^4
         version: 4.1.18
