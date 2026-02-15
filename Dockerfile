@@ -1,10 +1,5 @@
-FROM node:20-alpine AS base
-
-# Replace apk repositories with Aliyun mirror for faster downloads in China
-RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
-
 # Install dependencies only when needed
-FROM base AS deps
+FROM node:20-alpine AS deps
 # Check https://github.com/nodejs/docker-node/tree/b4117f9333da4138b03a546ec926ef50a31506c3#nodealpine to understand why libc6-compat might be needed.
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
@@ -14,7 +9,7 @@ COPY package.json pnpm-lock.yaml ./
 RUN corepack enable && pnpm config set registry https://registry.npmmirror.com && pnpm install
 
 # Rebuild the source code only when needed
-FROM base AS builder
+FROM node:20-alpine AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
@@ -27,7 +22,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN corepack enable && pnpm run build
 
 # Production image, copy all the files and run next
-FROM base AS runner
+FROM node:20-alpine AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
