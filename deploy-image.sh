@@ -18,10 +18,7 @@ IMAGE_NAME="${IMAGE_NAME:-ai-blog}"
 IMAGE_TAG="${IMAGE_TAG:-prod}"
 PLATFORM="linux/amd64"
 TAR_NAME="${TAR_NAME:-${IMAGE_NAME}-${IMAGE_TAG}.tar}"
-REMOTE_DIR="${REMOTE_DIR:-/root}"
-CONTAINER_NAME="${CONTAINER_NAME:-ai-blog}"
-HOST_PORT="${HOST_PORT:-3000}"
-CONTAINER_PORT="${CONTAINER_PORT:-3000}"
+REMOTE_DIR="${REMOTE_DIR:-/root/ai_blog}"
 
 echo "==> Building image: ${IMAGE_NAME}:${IMAGE_TAG} (${PLATFORM})"
 docker build --platform "${PLATFORM}" -t "${IMAGE_NAME}:${IMAGE_TAG}" .
@@ -31,11 +28,15 @@ docker save -o "${TAR_NAME}" "${IMAGE_NAME}:${IMAGE_TAG}"
 
 echo "==> Uploading ${TAR_NAME} to ${ECS_USER}@${ECS_HOST}:${REMOTE_DIR}"
 scp "${TAR_NAME}" "${ECS_USER}@${ECS_HOST}:${REMOTE_DIR}/"
+scp "docker-compose.yml" "${ECS_USER}@${ECS_HOST}:${REMOTE_DIR}/docker-compose.yml"
+scp "nginx/nginx.conf" "${ECS_USER}@${ECS_HOST}:${REMOTE_DIR}/nginx.conf"
 
-echo "==> Loading image and restarting container on ECS"
+echo "==> Loading image and starting services with docker compose on ECS"
 ssh "${ECS_USER}@${ECS_HOST}" "set -euo pipefail; \
 docker load -i '${REMOTE_DIR}/${TAR_NAME}'; \
-if docker ps -a --format '{{.Names}}' | grep -Fxq '${CONTAINER_NAME}'; then docker rm -f '${CONTAINER_NAME}'; fi; \
-docker run -d --name '${CONTAINER_NAME}' -p ${HOST_PORT}:${CONTAINER_PORT} --restart always '${IMAGE_NAME}:${IMAGE_TAG}'"
+mkdir -p '${REMOTE_DIR}/nginx'; \
+mv -f '${REMOTE_DIR}/nginx.conf' '${REMOTE_DIR}/nginx/nginx.conf'; \
+cd '${REMOTE_DIR}'; \
+docker compose up -d"
 
 echo "==> Done."
