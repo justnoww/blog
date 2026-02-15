@@ -16,7 +16,7 @@ ECS_USER="${2:-root}"
 
 IMAGE_NAME="${IMAGE_NAME:-ai-blog}"
 IMAGE_TAG="${IMAGE_TAG:-prod}"
-PLATFORM="${PLATFORM:-linux/amd64}"
+PLATFORM="linux/amd64"
 TAR_NAME="${TAR_NAME:-${IMAGE_NAME}-${IMAGE_TAG}.tar}"
 REMOTE_DIR="${REMOTE_DIR:-/root}"
 CONTAINER_NAME="${CONTAINER_NAME:-ai-blog}"
