@@ -9,8 +9,8 @@ FROM base AS deps
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
-# Install dependencies based on the preferred package manager
-COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* ./
+# Install dependencies with pnpm only
+COPY package.json pnpm-lock.yaml ./
 RUN corepack enable && pnpm config set registry https://registry.npmmirror.com && pnpm install
 
 # Rebuild the source code only when needed
