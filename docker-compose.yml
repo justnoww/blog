@@ -6,8 +6,8 @@ services:
     restart: always
     environment:
       - NODE_ENV=production
-    ports:
-      - "3000:3000" # 可选：直接暴露 Next.js 端口以便调试，生产环境可只通过 Nginx 访问
+    # ports:
+    #   - "3000:3000" # 可选：直接暴露 Next.js 端口以便调试，生产环境可只通过 Nginx 访问
     networks:
       - app-network
 
@@ -16,8 +16,10 @@ services:
     restart: always
     ports:
       - "80:80"
+      - "443:443"
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
     depends_on:
       - nextjs-app
     networks:

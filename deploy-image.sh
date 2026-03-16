@@ -29,13 +29,11 @@ docker save -o "${TAR_NAME}" "${IMAGE_NAME}:${IMAGE_TAG}"
 echo "==> Uploading ${TAR_NAME} to ${ECS_USER}@${ECS_HOST}:${REMOTE_DIR}"
 scp "${TAR_NAME}" "${ECS_USER}@${ECS_HOST}:${REMOTE_DIR}/"
 scp "docker-compose.yml" "${ECS_USER}@${ECS_HOST}:${REMOTE_DIR}/docker-compose.yml"
-scp "nginx/nginx.conf" "${ECS_USER}@${ECS_HOST}:${REMOTE_DIR}/nginx.conf"
+scp -r "nginx" "${ECS_USER}@${ECS_HOST}:${REMOTE_DIR}/nginx"
 
 echo "==> Loading image and starting services with docker compose on ECS"
 ssh "${ECS_USER}@${ECS_HOST}" "set -euo pipefail; \
 docker load -i '${REMOTE_DIR}/${TAR_NAME}'; \
-mkdir -p '${REMOTE_DIR}/nginx'; \
-mv -f '${REMOTE_DIR}/nginx.conf' '${REMOTE_DIR}/nginx/nginx.conf'; \
 cd '${REMOTE_DIR}'; \
 docker compose up -d"
 
